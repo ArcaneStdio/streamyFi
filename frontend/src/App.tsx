@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import FlowWalletConnect from './components/FlowWalletConnect'
 import Sidebar from './components/Sidebar'
+import GigForm from './components/GigForm'
+import GigManager from './components/GigManager'
 import type { CurrentUser } from '@onflow/fcl'
 import './App.css'
 
@@ -9,17 +11,15 @@ function App() {
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const handleWalletConnected = (connectedUser: CurrentUser) => {
+  const handleWalletConnected = useCallback((connectedUser: CurrentUser) => {
     setIsWalletConnected(true)
     setUser(connectedUser)
-    console.log('Wallet connected:', connectedUser)
-  }
+  }, [])
 
-  const handleWalletDisconnected = () => {
+  const handleWalletDisconnected = useCallback(() => {
     setIsWalletConnected(false)
     setUser(null)
-    console.log('Wallet disconnected')
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-300 w-full">
@@ -127,34 +127,23 @@ function App() {
           </div>
         </div>
 
-        {/* Status Section */}
+        {/* Gig Management Section */}
         {isWalletConnected && user && (
-          <div className="max-w-2xl mx-auto mb-16">
-            <div className="p-8 rounded-3xl bg-gray-300 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff]">
-              <div className="flex items-center justify-center mb-6">
-                <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg mr-3"></div>
-                <h2 className="text-2xl font-bold text-gray-700">
-                  Wallet Connected
-                </h2>
+          <div className="max-w-6xl mx-auto mb-16">
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Create Gig Form */}
+              <div>
+                <GigForm 
+                  user={user}
+                  onGigCreated={() => {
+                    // You could add logic here to refresh the gig list
+                  }}
+                />
               </div>
               
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 rounded-2xl bg-gray-300 shadow-[inset_5px_5px_10px_#bebebe,inset_-5px_-5px_10px_#ffffff]">
-                  <span className="text-gray-600 font-medium">Status</span>
-                  <span className="text-green-600 font-bold text-lg">● Connected</span>
-                </div>
-                
-                <div className="p-4 rounded-2xl bg-gray-300 shadow-[inset_5px_5px_10px_#bebebe,inset_-5px_-5px_10px_#ffffff]">
-                  <span className="text-gray-600 font-medium block mb-2">Address</span>
-                  <span className="font-mono text-sm text-gray-700 bg-gray-300 px-3 py-2 rounded-xl shadow-[inset_2px_2px_4px_#bebebe,inset_-2px_-2px_4px_#ffffff]">
-                    {user.addr || 'N/A'}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between items-center p-4 rounded-2xl bg-gray-300 shadow-[inset_5px_5px_10px_#bebebe,inset_-5px_-5px_10px_#ffffff]">
-                  <span className="text-gray-600 font-medium">Network</span>
-                  <span className="text-gray-700 font-bold">Flow Testnet</span>
-                </div>
+              {/* Manage Gigs */}
+              <div>
+                <GigManager user={user} />
               </div>
             </div>
           </div>

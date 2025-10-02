@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as fcl from '@onflow/fcl';
 import type { CurrentUser } from '@onflow/fcl';
 
@@ -8,6 +8,7 @@ fcl.config({
   'discovery.wallet': 'https://fcl-discovery.onflow.org/testnet/authn',
   'app.detail.title': 'StreamyFi',
   'app.detail.icon': 'https://placekitten.com/g/200/200',
+  '0xProfile': '0x1d7e57aa55817448',
 });
 
 interface FlowWalletConnectProps {
@@ -25,7 +26,7 @@ const FlowWalletConnect: React.FC<FlowWalletConnectProps> = ({
 
   useEffect(() => {
     // Check if user is already logged in
-    fcl.currentUser.subscribe((user) => {
+    const unsubscribe = fcl.currentUser.subscribe((user) => {
       setUser(user);
       if (user.loggedIn && onWalletConnected) {
         onWalletConnected(user);
@@ -33,9 +34,16 @@ const FlowWalletConnect: React.FC<FlowWalletConnectProps> = ({
         onWalletDisconnected();
       }
     });
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [onWalletConnected, onWalletDisconnected]);
 
-  const handleConnect = async () => {
+  const handleConnect = useCallback(async () => {
     try {
       setIsConnecting(true);
       setError(null);
@@ -46,21 +54,21 @@ const FlowWalletConnect: React.FC<FlowWalletConnectProps> = ({
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, []);
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = useCallback(async () => {
     try {
       await fcl.unauthenticate();
     } catch (err) {
       console.error('Failed to disconnect wallet:', err);
       setError('Failed to disconnect wallet. Please try again.');
     }
-  };
+  }, []);
 
-  const formatAddress = (address?: string) => {
+  const formatAddress = useCallback((address?: string) => {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+  }, []);
 
   if (user?.loggedIn === true) {
     return (
@@ -155,4 +163,4 @@ const FlowWalletConnect: React.FC<FlowWalletConnectProps> = ({
   );
 };
 
-export default FlowWalletConnect;
+export default React.memo(FlowWalletConnect);

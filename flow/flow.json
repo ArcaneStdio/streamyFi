@@ -3,6 +3,19 @@
 		"Counter": {
 			"source": "cadence/contracts/Counter.cdc",
 			"aliases": {
+				"testing": "000000000000007"
+			}
+		},
+		"PullStream": {
+			"source": "cadence/contracts/PullStream.cdc",
+			"aliases": {
+				"testing": "0000000000000007",
+				"testnet": "966d51b6b6156a6f"
+			}
+		},
+		"PullStreamSimple": {
+			"source": "cadence/contracts/PullStreamSimple.cdc",
+			"aliases": {
 				"testing": "0000000000000007"
 			}
 		}
@@ -124,12 +137,35 @@
 		"testnet": "access.devnet.nodes.onflow.org:9000"
 	},
 	"accounts": {
+		"": {
+			"address": "966d51b6b6156a6f",
+			"key": {
+				"type": "file",
+				"location": ".pkey"
+			}
+		},
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"key": {
 				"type": "file",
 				"location": "emulator-account.pkey"
 			}
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"emulator-account": [
+				"Counter",
+				"PullStream",
+				"PullStreamSimple"
+			]
+		},
+		"testnet": {
+			"": [
+				"Counter",
+				"PullStream",
+				"PullStreamSimple"
+			]
 		}
 	}
 }
