@@ -1,11 +1,6 @@
 {
 	"contracts": {
-		"Counter": {
-			"source": "cadence/contracts/Counter.cdc",
-			"aliases": {
-				"testing": "0000000000000007"
-			}
-		}
+		"PushStream": "cadence/contracts/PushStream.cdc"
 	},
 	"dependencies": {
 		"Burner": {
@@ -130,6 +125,13 @@
 				"type": "file",
 				"location": "emulator-account.pkey"
 			}
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"emulator-account": [
+				"PushStream"
+			]
 		}
 	}
 }
