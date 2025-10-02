@@ -22,6 +22,7 @@ access(all) contract PushStream {
         access(all) let rate : UFix64
         access(all) let interval : UFix64
         access(all) var validity : UFix64?
+        access(all) var resumeCount : UInt64
 
         // Internal accounting
         access(contract) var withdrawn: UFix64
@@ -46,6 +47,7 @@ access(all) contract PushStream {
             self.withdrawn = 0.0
             self.paused = false
             self.pauseTime = nil
+            self.resumeCount = 0
         }
 
         access(contract) fun markWithdraw(amount: UFix64) {
@@ -60,10 +62,15 @@ access(all) contract PushStream {
         access(contract) fun resume() {
             self.paused = false
             self.pauseTime = nil
+            self.resumeCount = self.resumeCount + 1
         }
 
         access(contract) fun setValidity(to: UFix64) {
             self.validity = to
+        }
+
+        access(contract) fun resetResumeCount() {
+            self.resumeCount = 0
         }
     }
 
@@ -123,21 +130,26 @@ access(all) contract PushStream {
 
         let stream = self.streams[id]!
         let escrow <- self.escrows.remove(key: id) ?? panic("No escrow vault")
-
-        if stream.paused {
-            self.escrows[id] <-! escrow
-            return
-        }
         let recipient = getAccount(stream.to)
             .capabilities
             .borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver) 
             ?? panic("Could not borrow recipient's vault receiver")
 
+        if stream.paused {
+            if (stream.resumeCount != 0) {
+                let withdrawnVault <- escrow.withdraw(amount: stream.rate)
+                recipient.deposit(from: <- withdrawnVault)
+                stream.resetResumeCount()
+            }
+            else {
+                self.escrows[id] <-! escrow
+                return
+            }
+        }
+
         let now = getCurrentBlock().timestamp
         if escrow.balance <= stream.rate {
             self.cancelStream(id: id, from: stream.to)
-            destroy escrow
-            return
         }
         let withdrawnVault <- escrow.withdraw(amount: stream.rate)
         recipient.deposit(from: <- withdrawnVault)
