@@ -125,6 +125,10 @@
 				"type": "file",
 				"location": "emulator-account.pkey"
 			}
+		},
+		"new_emu": {
+			"address": "179b6b1cb6755e31",
+			"key": "6925144740bf6155be7b806921e696b0bae7f9aa747b0aeb7b56bdf83b458173"
 		}
 	},
 	"deployments": {
